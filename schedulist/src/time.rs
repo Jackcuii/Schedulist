@@ -1,79 +1,63 @@
-
-macro_rules! ARBI {
-    () => {
-        (-1)
-    };
+use chrono::*;
+enum TimeMask {
+    TO_YEAR = 0,
+    TO_MONTH = 1,
+    TO_DAY = 2,
+    TO_HOUR = 3,
+    TO_MINUTE = 4,
 }
-struct FlexTime(i32, i32, i32, i32, i32); // year, month, day, hour, minute
+struct FlexTime {
+    time: chrono::DateTime<Utc>,
+    mask: TimeMask, // means the time is accurate to which level
+}
+
+struct FlexInterval (FlexTime, FlexTime);
 
 impl FlexTime {
     fn year(&self) -> i32 {
-        self.0
+        self.time.year()
     }
-    fn month(&self) -> i32 {
-        self.1
+    fn month(&self) -> u32 {
+        self.time.month()
     }
-    fn day(&self) -> i32 {
-        self.2
+    fn day(&self) -> u32 {
+        self.time.day()
     }
-    fn hour(&self) -> i32 {
-        self.3
+    fn hour(&self) -> u32 {
+        self.time.hour()
     }
-    fn minute(&self) -> i32 {
-        self.4
+    fn minute(&self) -> u32 {
+        self.time.minute()
     }
     fn index(&self, index: usize) -> i32 {
         match index {
-            0 => self.0,
-            1 => self.1,
-            2 => self.2,
-            3 => self.3,
-            4 => self.4,
+            0 => self.year(),
+            1 => self.month() as i32,
+            2 => self.day() as i32,
+            3 => self.hour() as i32,
+            4 => self.minute() as i32,
             _ => panic!("Index out of bounds"),
         }
     }
 }
 
-impl FlexTime {
-    fn match_time (pattern: &FlexTime, target: &FlexTime) -> bool {
-        // match time
-        for i in 0..4 {
-            if pattern.index(i) != ARBI!() && pattern.index(i) != target.index(i) {
-                return false;
-            }
+impl FlexInterval{
+    fn includes(&self, time: &FlexTime) -> bool {
+        // compare time
+        if self.0.is_earlier_than(time) && self.1.is_later_than(time) {
+            return true;
         }
-        return true;
-    }
-    fn validate_time (time: &FlexTime) -> bool {
-        // validate time
-        let mut flag = true;
-        for i in 0..4{
-            if time.index(i) == ARBI!() {
-                flag = false;
-            }
-            else {
-                if !flag {
-                    return false;
-                }
-            }
-        } // the time arbitary part must be at the end, the multi-period time is not allowed, should be set in RepeatPeriod
-        if time.year() < 0 || time.month() < 0 || time.day() < 0 || time.hour() < 0 || time.minute() < 0 {
-            return false;
+        return false;
+    } 
+    fn intersects(&self, interval: &FlexInterval) -> bool {
+        // compare time
+        if self.0.is_earlier_than(&interval.1) && self.1.is_later_than(&interval.0) {
+            return true;
         }
-        if time.month() > 12 || time.day() > 31 || time.hour() >= 24 || time.minute() >= 60 {
-            return false;
+        if self.0.is_later_than(&interval.1) && self.1.is_earlier_than(&interval.0) { 
+            return true;
         }
-        return true;
-    }
-    fn validate_a_period (start: &FlexTime, end: &FlexTime) -> bool {
-        // validate a period
-        if !FlexTime::validate_time(start) || !FlexTime::validate_time(end) {
-            return false;
-        }
-        if start.is_later_than(end) {
-            return false;
-        }
-        return true;
+        return false;
     }
 }
 
@@ -81,9 +65,8 @@ impl FlexTime {
 impl FlexTime{
     fn is_earlier_than(&self, time: &FlexTime) -> bool {
         // compare time
-        
         for i in 0..4 {
-            if self.index(i) < time.index(i) {
+            if self.index(i) <= time.index(i) {
                 return true;
             }
         }
@@ -92,7 +75,7 @@ impl FlexTime{
     fn is_later_than(&self, time: &FlexTime) -> bool {
         // compare time
         for i in 0..4 {
-            if self.index(i) > time.index(i) {
+            if self.index(i) >= time.index(i) {
                 return true;
             }
         }   
@@ -107,7 +90,5 @@ impl FlexTime{
         }
         return true;
     }
-    fn is_fine_grained(&self) -> bool {
-        return !(self.hour() == ARBI!() && self.minute() == ARBI!());
-    }
+    
 }

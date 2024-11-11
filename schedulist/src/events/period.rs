@@ -8,8 +8,7 @@ struct PeriodShortRun {
     tags: Vec<String>,
     priority: i8,
     // specific
-    startTime: FlexTime,
-    endTime: FlexTime,
+    interval: FlexInterval,
     linked_deadline: Deadline,
     linked_longrun: PeriodLongRun
 }
@@ -46,10 +45,9 @@ const NULL_SHORT_RUN: PeriodShortRun = PeriodShortRun {
     scheduled: false,
     tags: Vec::new(),
     priority: 0,
-    startTime: FlexTime::NULL_TIME,
-    endTime: FlexTime::NULL_TIME,
+    interval: FlexInterval::NULL_INTERVAL,
     linked_deadline: NULL_DEADLINE,
-    linked_longrun: NULL_LONG_RUN
+    linked_longrun: NULL_LONG_RUNW
 };
 
 
@@ -62,8 +60,7 @@ struct PeriodLongRun {
     tags: Vec<String>,
     priority: i8,
     // specific
-    startTime: FlexTime,
-    endTime: FlexTime,
+    interval: FlexInterval,
     linked_deadline: Deadline,
     linked_shortrun: Vec<PeriodShortRun>
 }
@@ -75,8 +72,7 @@ const NULL_LONG_RUN: PeriodLongRun = PeriodLongRun {
     scheduled: false,
     tags: Vec::new(),
     priority: 0,
-    startTime: FlexTime::NULL_TIME,
-    endTime: FlexTime::NULL_TIME,
+    interval: FlexInterval::NULL_INTERVAL,
     linked_deadline: NULL_DEADLINE,
     linked_shortrun: Vec::new()
 };

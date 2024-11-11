@@ -8,6 +8,9 @@ const NULL_DEADLINE: Deadline = Deadline {
 };
 
 struct Deadline {
-    time: u64,
-    task: Task,
+    initialized: bool,
+    scheduled: bool,
+    
 }
+
+impl eventCommon for Deadline {}
